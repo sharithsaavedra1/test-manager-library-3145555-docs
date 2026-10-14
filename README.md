@@ -40,32 +40,34 @@ No hay prórroga: suban avances parciales con commits pequeños durante la prueb
 
 ## Qué contiene este repositorio
 
-| Carpeta | Contenido |
+| Carpeta / Documento | Contenido |
 |---|---|
-| [`spec-python/`](spec-python/) | El spec de Manager Library escrito para un backend Python |
-| [`spec-.net/`](spec-.net/) | El mismo sistema especificado para un backend .NET |
-
-Las dos versiones describen el **mismo producto** (las mismas historias, reglas de negocio y
-endpoints); cambian las decisiones de tecnología. Ninguna de las dos es el stack del reto.
+| [`technical-debt.md`](technical-debt.md) | **Registro Formal de Deuda Técnica e Inconsistencias Resueltas (Regla de Oro)** |
+| [`quality-pillars-compliance.md`](quality-pillars-compliance.md) | **Cumplimiento de Pilares de Calidad y Solución de Inconsistencias** |
+| [`spec-laravel/`](spec-laravel/) | **Especificación Oficial adaptada a PHP (Laravel) y React (Stack del Reto)** |
+| [`spec-python/`](spec-python/) | El spec de Manager Library escrito para un backend Python (referencia) |
+| [`spec-.net/`](spec-.net/) | El mismo sistema especificado para un backend .NET (referencia) |
 
 ## Cómo se lee el spec
 
-En cualquiera de las dos carpetas, en este orden:
+En `spec-laravel/` (o en cualquiera de las carpetas de referencia), en este orden:
 
 1. `constitution.md` — principios innegociables.
 2. `spec.md` — qué debe hacer el sistema: actores, historias, criterios de aceptación, reglas de negocio.
-3. `plan.md`, `architecture.md` y `arquitectura-panoramica.md` — cómo se construye.
-4. `data-model.md` y `api-contract.md` — el modelo de datos y el contrato de la API.
-5. `tasks.md` — qué hay que hacer y con qué evidencia se da por hecho.
-6. `adr/` — las decisiones de arquitectura, con sus alternativas y consecuencias.
+3. `technical-debt.md` y `quality-pillars-compliance.md` — inconsistencias resueltas y pilares de calidad.
+4. `plan.md`, `architecture.md` y `arquitectura-panoramica.md` — cómo se construye.
+5. `data-model.md` y `api-contract.md` — el modelo de datos y el contrato de la API.
+6. `tasks.md` — qué hay que hacer y con qué evidencia se da por hecho.
+7. `adr/` — las decisiones de arquitectura, con sus alternativas y consecuencias.
 
-## Los seis repositorios
+## Los seis componentes del sistema
 
-| Repositorio | Qué va ahí |
+| Componente | Qué va ahí |
 |---|---|
-| [`test-manager-library-3145555-docs`](https://github.com/code-sena/test-manager-library-3145555-docs) | El spec: `spec-python/` y `spec-.net/` |
-| [`test-manager-library-3145555-api`](https://github.com/code-sena/test-manager-library-3145555-api) | Backend en PHP (Laravel) |
-| [`test-manager-library-3145555-app`](https://github.com/code-sena/test-manager-library-3145555-app) | Frontend en React |
-| [`test-manager-library-3145555-page`](https://github.com/code-sena/test-manager-library-3145555-page) | Sitio público estático de presentación |
-| [`test-manager-library-3145555-infra`](https://github.com/code-sena/test-manager-library-3145555-infra) | Contenedores, red, volúmenes y motor de base de datos vacío |
-| [`test-manager-library-3145555-tool`](https://github.com/code-sena/test-manager-library-3145555-tool) | Utilidades: sembrador de datos de demostración |
+| [`docs/`](.) | El spec completo, inconsistencias y deuda técnica |
+| [`api/`](../api) | Backend en PHP (Laravel) |
+| [`app/`](../app) | Frontend en React |
+| [`page/`](../page) | Sitio público estático de presentación |
+| [`infra/`](../infra) | Contenedores, red, volúmenes y motor de base de datos vacío |
+| [`tool/`](../tool) | Utilidades: sembrador de datos de demostración |
+
