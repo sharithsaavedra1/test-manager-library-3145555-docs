@@ -1,0 +1,27 @@
+# Registro de Deuda Técnica — Manager Library (Ficha ADSO 3145555)
+
+> **Documento de Cumplimiento de Reglas de Oro y Auditoría de Especificación (SDD)**
+> Fecha: 14 de Octubre de 2026
+> Autor: Sharith Saavedra
+
+Este documento registra de forma explícita y formal todas las **inconsistencias**, **discrepancias de diseño** y **deuda técnica** identificadas en la especificación base (`docs/`), cumpliendo la directriz estricta del evaluador:
+> *"No pueden modificar absolutamente nada de alcance de producto (no cambiar nombres de atributos, entidades ni endpoints). Si encuentran nombres en español o disparidad de singular/plural o falta de atributos, deben registrar la deuda técnica y resolver el cumplimiento de pilares de calidad sin alterar el alcance".*
+
+---
+
+## 1. Matriz de Deuda Técnica e Inconsistencias Identificadas
+
+| ID | Componente / Archivo | Inconsistencia Detectada | Regla de Oro / Pilar Afectado | Decisión y Resolución Técnica (Sin Modificar Alcance) |
+|---|---|---|---|---|
+| **DT-01** | `data-model.md` vs `api-contract.md` y Convención Laravel | **Pluralidad vs Singularidad en Nombres de Entidades**: `data-model.md` §0 impone tablas en singular (`category`, `book`, `member`, `loan`, `loan_item`, `user`). No obstante, `api-contract.md` utiliza rutas REST pluralizadas (`/categories`, `/books`, `/members`, `/loans`, `/users`) y el ORM estándar de Laravel (Eloquent) espera por convención nombres plurales (`categories`, `books`). | Inmutabilidad de Entidades y Alcance del Producto. | **Resolución:** Se preserva el alcance físico del modelo en **estricto singular** en PostgreSQL (`library.book`, `library.loan_item`, etc.). En los modelos de Laravel se define explícitamente `protected $table = 'library.book';` etc., para no alterar el esquema del motor ni los endpoints de la API. |
+| **DT-02** | `adr-002-concurrencia-optimista.md` vs `data-model.md` §3 | **Ausencia de Atributo de Versión para Concurrencia Optimista**: ADR-002 y la tarea T-13 dictan el uso de un *«testigo de versión por libro»*, pero la tabla `book` en `data-model.md` §3 **no contiene ninguna columna `version`**. Agregarla rompería la regla de *"no modificar alcance de atributos"*. | Inmutabilidad de Atributos de Entidad vs RNF-2 (Concurrencia). | **Resolución:** Se implementa la concurrencia optimista y la prevención de sobre-préstamo del último ejemplar a nivel de motor de base de datos combinando: (1) decremento atómico con condición guardiana (`UPDATE library.book SET available_copies = available_copies - 1 WHERE id = ? AND available_copies > 0`), (2) la restricción del motor `ck_book_available_range (0 <= available_copies <= total_copies)`. Si dos bibliotecarios intentan prestar el último ejemplar en simultáneo, uno actualiza 1 fila y el otro 0 filas, disparando `409 BOOK_NOT_AVAILABLE` sin requerir una columna adicional. |
+| **DT-03** | `constitution.md` (Art. VI) vs `data-model.md` §4 | **Inconsistencia de Restricciones Diferidas**: El Artículo VI de la Constitución declara: *«Las invariantes que la base puede imponer, la base las impone»*. Sin embargo, `data-model.md` §4 clasifica `total_copies >= 1` (`ck_book_total_positive`) y `role IN ('admin','librarian')` (`ck_user_role`) como *«pendiente (T-18) · hoy solo dominio»*. | Principio de Robustez y Calidad de Datos (Art. VI y Art. X). | **Resolución:** En cumplimiento del pilar de calidad y la constitución, ambas restricciones CHECK (`ck_book_total_positive` y `ck_user_role`) se incorporan de forma nativa desde la migración inicial (T-02), garantizando que el motor sea la barrera infranqueable de integridad. |
+| **DT-04** | `constitution.md` (Art. XI) vs `data-model.md` §9 | **Idioma de Nombres Sembrados vs Estándar de Código**: El Artículo XI exige: *«Código, columnas y rutas en inglés. Documentación y mensajes al usuario en español»*. Sin embargo, las categorías sembradas en §9 están en español (`Novela`, `Ciencia`, `Tecnología`, `Historia`, `Infantil`). | Idioma y Consistencia. | **Resolución:** Se respeta el alcance del negocio manteniendo los valores sembrados en español como datos de dominio consumibles por la interfaz, pero todas las clases, métodos, variables, migraciones y endpoints permanecen 100% en inglés. |
+| **DT-05** | `spec.md` (CA-03.4) vs `api-contract.md` §3.4 vs `plan.md` D-08 | **Manejo de Almacenamiento y Clave Opaca de Portadas**: `api-contract.md` define que `cover_key` es opaca y se sube por `PUT /books/{id}/cover` y se elimina por `DELETE /books/{id}/cover`. El spec advierte que al eliminar un libro o portada, primero debe anularse `cover_key` en BD y luego eliminar el binario físico. | Integridad Referencial y Almacenamiento Externo. | **Resolución:** Se implementa un servicio desacoplado con la interfaz `CoverStorageInterface` que asegura atomicidad transaccional: el registro en base de datos se confirma primero y la remoción en disco se efectúa en un bloque `afterCommit`. |
+
+---
+
+## 2. Acciones Correctivas Aplicadas en la Documentación
+
+1. **Definición de Adaptación a Laravel + React (`docs/spec-laravel/`)**: Se formaliza la arquitectura hexagonal (Domain, Application, Infrastructure/Adapters) adaptada al ecosistema PHP 8.1+ y Laravel 10/11 sin abandonar los principios innegociables de la constitución.
+2. **Validación de Invariantes**: Ningún endpoint, entidad o atributo de `api-contract.md` y `data-model.md` fue modificado, garantizando 100% de compatibilidad con las pruebas automáticas del evaluador.
